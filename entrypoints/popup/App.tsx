@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import reactLogo from '@/assets/react.svg';
 import wxtLogo from '/wxt.svg';
 import './App.css';
-import { storage } from '#imports';
+import { storage, browser } from '#imports';
 
 
 interface ElementSettings {
@@ -37,9 +37,22 @@ function App() {
   const [targetLanguage, setTargetLanguage] = useState('es');
   const [excludedDomains, setExcludedDomains] = useState<string[]>([]);
   const [newDomain, setNewDomain] = useState('');
+  const [currentDomain, setCurrentDomain] = useState<string | null>(null);
 
   // Load settings when popup opens
   useEffect(() => {
+    // Get current tab's domain
+    browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
+      if (tabs[0]?.url) {
+        try {
+          const url = new URL(tabs[0].url);
+          setCurrentDomain(url.hostname);
+        } catch (e) {
+          console.error('Failed to parse URL:', e);
+        }
+      }
+    });
+
     storage.getItem('local:elementSettings').then((result: any) => {
       if (result) {
         setSettings(result);
@@ -112,6 +125,15 @@ function App() {
     storage.setItem('local:excludedDomains', updatedDomains);
   };
 
+  // Handle excluding current domain
+  const handleExcludeCurrentDomain = () => {
+    if (currentDomain && !excludedDomains.includes(currentDomain)) {
+      const updatedDomains = [...excludedDomains, currentDomain];
+      setExcludedDomains(updatedDomains);
+      storage.setItem('local:excludedDomains', updatedDomains);
+    }
+  };
+
   return (
     <>
     <div className="settings-container bg-gradient-to-br from-emerald-600 to-emerald-300">
@@ -151,25 +173,36 @@ function App() {
 
       <div className="excluded-domains-section bg-gray-100 p-4 rounded-lg mb-4">
         <h2 className="text-lg font-bold mb-4">Excluded Domains</h2>
-        <form onSubmit={handleAddDomain} className="flex gap-2 mb-4 flex-row w-full">
-          <input
-            type="text"
-            value={newDomain}
-            onChange={(e) => setNewDomain(e.target.value)}
-            placeholder="e.g. example.com"
-            className="p-2 rounded border w-full"
-          />
-          <button type="submit" className="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700">
-            Add
-          </button>
-        </form>
+        <div className="flex gap-2 mb-4 flex-col">
+          <form onSubmit={handleAddDomain} className="flex gap-2 flex-1">
+            <input
+              type="text"
+              value={newDomain}
+              onChange={(e) => setNewDomain(e.target.value)}
+              placeholder="e.g. example.com"
+              className="p-2 rounded border w-full"
+            />
+            <button type="submit" className="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700">
+              Add
+            </button>
+          </form>
+          {currentDomain && !excludedDomains.includes(currentDomain) && (
+            <button
+              onClick={handleExcludeCurrentDomain}
+              className="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700 whitespace-nowrap"
+              title={`Exclude ${currentDomain}`}
+            >
+              Exclude Current
+            </button>
+          )}
+        </div>
         <div className="excluded-domains-list">
           {excludedDomains.map((domain, index) => (
             <div key={index} className="flex items-center justify-between bg-white p-2 rounded mb-2">
               <span>{domain}</span>
               <button
                 onClick={() => handleRemoveDomain(domain)}
-                className="text-red-600 hover:text-red-800"
+                className="text-red-600 hover:text-red-800 bg-gray-100 hover:bg-white rounded-full p-1 w-6 h-6 flex items-center justify-center"
               >
                 ✕
               </button>
