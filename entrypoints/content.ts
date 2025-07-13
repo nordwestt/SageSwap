@@ -51,6 +51,21 @@ export default defineContentScript({
         transform: translateY(-100%);
         margin-top: -8px;
       }
+
+      .translated-element {
+        position: relative;
+        background: linear-gradient(120deg, rgba(108, 99, 255, 0.8), rgba(74, 144, 226, 0.8), rgba(255, 107, 237, 0.8));
+        border-radius: 8px;
+        padding: 6px !important;
+        color: white !important;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(108, 99, 255, 0.1);
+      }
+
+      .translated-element:hover {
+        background: linear-gradient(120deg, rgba(108, 99, 255, 0.7), rgba(74, 144, 226, 0.6), rgba(255, 107, 237, 0.6));
+        border: 1px solid rgba(108, 99, 255, 0.2);
+      }
     `;
     document.head.appendChild(style);
 
@@ -62,6 +77,7 @@ export default defineContentScript({
         for (const element of elements) {
           if (element.textContent && !element.hasAttribute('data-original-text')) {
             try {
+              element.classList.add('translated-element');
               // Store original text
               const originalText = element.textContent;
               element.setAttribute('data-original-text', originalText);
@@ -134,6 +150,7 @@ export default defineContentScript({
         if (originalText) {
           element.textContent = originalText;
           element.removeAttribute('data-original-text');
+          element.classList.remove('translated-element');
           element.removeEventListener('mouseenter', showOriginalText as EventListener);
           element.removeEventListener('mouseleave', hideOriginalText as EventListener);
         }
