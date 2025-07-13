@@ -73,6 +73,15 @@ export async function translateText({
 export default defineContentScript({
   matches: ['<all_urls>'],
   async main() {
+    // Check if current domain is excluded
+    const currentDomain = window.location.hostname;
+    const excludedDomains = await storage.getItem<string[]>('local:excludedDomains') || [];
+    
+    if (excludedDomains.includes(currentDomain)) {
+      console.log('SwapSage: Translation disabled for this domain');
+      return;
+    }
+
     // Get settings from storage
     const result = await storage.getItem<any>('local:elementSettings') || {};
     const elementSettings = result || {

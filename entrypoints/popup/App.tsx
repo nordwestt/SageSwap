@@ -35,6 +35,8 @@ function App() {
   });
   const [apiKey, setApiKey] = useState('');
   const [targetLanguage, setTargetLanguage] = useState('es');
+  const [excludedDomains, setExcludedDomains] = useState<string[]>([]);
+  const [newDomain, setNewDomain] = useState('');
 
   // Load settings when popup opens
   useEffect(() => {
@@ -55,6 +57,13 @@ function App() {
     storage.getItem('local:targetLanguage').then((lang: unknown) => {
       if (typeof lang === 'string') {
         setTargetLanguage(lang);
+      }
+    });
+
+    // Load excluded domains
+    storage.getItem('local:excludedDomains').then((domains: unknown) => {
+      if (Array.isArray(domains)) {
+        setExcludedDomains(domains);
       }
     });
   }, []);
@@ -83,6 +92,24 @@ function App() {
     const newLanguage = event.target.value;
     setTargetLanguage(newLanguage);
     storage.setItem('local:targetLanguage', newLanguage);
+  };
+
+  // Handle adding a new domain
+  const handleAddDomain = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (newDomain && !excludedDomains.includes(newDomain)) {
+      const updatedDomains = [...excludedDomains, newDomain];
+      setExcludedDomains(updatedDomains);
+      setNewDomain('');
+      storage.setItem('local:excludedDomains', updatedDomains);
+    }
+  };
+
+  // Handle removing a domain
+  const handleRemoveDomain = (domain: string) => {
+    const updatedDomains = excludedDomains.filter(d => d !== domain);
+    setExcludedDomains(updatedDomains);
+    storage.setItem('local:excludedDomains', updatedDomains);
   };
 
   return (
@@ -119,6 +146,38 @@ function App() {
         </select>
         <p className="help-text">
           Select the language to translate text into
+        </p>
+      </div>
+
+      <div className="excluded-domains-section bg-gray-100 p-4 rounded-lg mb-4">
+        <h2 className="text-lg font-bold mb-4">Excluded Domains</h2>
+        <form onSubmit={handleAddDomain} className="flex gap-2 mb-4">
+          <input
+            type="text"
+            value={newDomain}
+            onChange={(e) => setNewDomain(e.target.value)}
+            placeholder="e.g. example.com"
+            className="flex-grow p-2 rounded border"
+          />
+          <button type="submit" className="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700">
+            Add
+          </button>
+        </form>
+        <div className="excluded-domains-list">
+          {excludedDomains.map((domain, index) => (
+            <div key={index} className="flex items-center justify-between bg-white p-2 rounded mb-2">
+              <span>{domain}</span>
+              <button
+                onClick={() => handleRemoveDomain(domain)}
+                className="text-red-600 hover:text-red-800"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+        <p className="help-text">
+          Add domains where you don't want translations to run
         </p>
       </div>
 
