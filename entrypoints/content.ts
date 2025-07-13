@@ -1,4 +1,43 @@
 import { storage } from '#imports';
+
+
+export async function translateText({
+  text,
+  source,
+  target
+}: {
+  text: string;
+  source: string;
+  target: string;
+}): Promise<string> {
+  const apiKey = "";
+
+  if (!apiKey) {
+    throw new Error("Missing DeepL API key.");
+  }
+
+  const response = await fetch("https://api.deepl.com/v2/translate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `DeepL-Auth-Key ${apiKey}`,
+    },
+    body: JSON.stringify({
+      text: [text],
+      target_lang: target,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`DeepL API error: ${response.status} - ${errorText}`);
+  }
+
+  const result = await response.json();
+
+  return result.translations[0].text;
+}
+
 export default defineContentScript({
   matches: ['<all_urls>'],
   async main() {
@@ -16,7 +55,7 @@ export default defineContentScript({
       targetElements: Object.entries(elementSettings)
         .filter(([_, isEnabled]) => isEnabled)
         .map(([elementType]) => elementType),
-      tooltipClass: 'original-text-tooltip'
+      tooltipClass: 'original-text-tooltip',
     };
 
     // Create and inject hover tooltip styles
@@ -38,32 +77,43 @@ export default defineContentScript({
     `;
     document.head.appendChild(style);
 
-    // Function to convert text to uppercase and store original
-    function convertElementsToUpperCase() {
-      config.targetElements.forEach(elementType => {
+    // Function to translate text to Spanish and store original
+    async function translateElementsToSpanish() {
+      for (const elementType of config.targetElements) {
         const elements = document.getElementsByTagName(elementType);
         
         for (const element of elements) {
-          console.log("element",element);
           if (element.textContent && !element.hasAttribute('data-original-text')) {
-            // Store original text
-            const originalText = element.textContent;
-            element.setAttribute('data-original-text', originalText);
-            
-            // Convert to uppercase
-            element.textContent = originalText.toUpperCase();
-            
-            // Add hover listeners
-            element.addEventListener('mouseenter', showOriginalText as EventListener);
-            element.addEventListener('mouseleave', hideOriginalText as EventListener);
+            try {
+              // Store original text
+              const originalText = element.textContent;
+              element.setAttribute('data-original-text', originalText);
+              
+              // Translate to Spanish
+              const translatedText = await translateText({
+                text: originalText,
+                source: 'en',
+                target: 'es'
+              });
+              element.textContent = translatedText;
+              
+              // Add hover listeners
+              element.addEventListener('mouseenter', showOriginalText as EventListener);
+              element.addEventListener('mouseleave', hideOriginalText as EventListener);
+            } catch (error) {
+              console.error('Translation error:', error);
+              // If translation fails, keep original text
+              if (!element.hasAttribute('data-original-text')) {
+                element.removeAttribute('data-original-text');
+              }
+            }
           }
         }
-      });
+      }
     }
 
     // Show original text tooltip
     function showOriginalText(event: MouseEvent) {
-      console.log("showOriginalText",event);
       const element = event.target as HTMLElement;
       const originalText = element.getAttribute('data-original-text');
       
@@ -89,7 +139,6 @@ export default defineContentScript({
 
     // Hide original text tooltip
     function hideOriginalText(event: MouseEvent) {
-      console.log("hideOriginalText",event);
       const element = event.target as HTMLElement;
       const tooltipId = element.getAttribute('data-tooltip-id');
       if (tooltipId) {
@@ -125,12 +174,12 @@ export default defineContentScript({
         
         // Reset all elements and reapply with new settings
         resetElements();
-        convertElementsToUpperCase();
+        translateElementsToSpanish();
       }
     });
 
-    // Run the initial conversion
-    convertElementsToUpperCase();
+    // Run the initial translation
+    translateElementsToSpanish();
 
     // Also handle dynamically added elements using MutationObserver
     const observer = new MutationObserver((mutations) => {
@@ -141,7 +190,7 @@ export default defineContentScript({
             if (node.nodeType === Node.ELEMENT_NODE) {
               const element = node as Element;
               if (config.targetElements.includes(element.tagName.toLowerCase())) {
-                convertElementsToUpperCase();
+                translateElementsToSpanish();
               } else {
                 // Check for target elements inside the added element
                 let hasTargetElements = false;
@@ -151,7 +200,7 @@ export default defineContentScript({
                   }
                 });
                 if (hasTargetElements) {
-                  convertElementsToUpperCase();
+                  translateElementsToSpanish();
                 }
               }
             }
