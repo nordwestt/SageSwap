@@ -1,10 +1,16 @@
 export default defineContentScript({
   matches: ['<all_urls>'],
   main() {
+    // Configuration object
+    const config = {
+      targetElements: ['h1', 'h2', 'h3'], // Add or remove elements as needed
+      tooltipClass: 'original-text-tooltip'
+    };
+
     // Create and inject hover tooltip styles
     const style = document.createElement('style');
     style.textContent = `
-      .original-text-tooltip {
+      .${config.tooltipClass} {
         position: absolute;
         background: #f9f9f9;
         border: 1px solid #ddd;
@@ -20,46 +26,48 @@ export default defineContentScript({
     `;
     document.head.appendChild(style);
 
-    // Function to convert h1 text to uppercase and store original
-    function convertH1sToUpperCase() {
-      const h1Elements = document.getElementsByTagName('h1');
-      
-      for (const h1 of h1Elements) {
-        if (h1.textContent && !h1.hasAttribute('data-original-text')) {
-          // Store original text
-          const originalText = h1.textContent;
-          h1.setAttribute('data-original-text', originalText);
-          
-          // Convert to uppercase
-          h1.textContent = originalText.toUpperCase();
-          
-          // Add hover listeners
-          h1.addEventListener('mouseenter', showOriginalText);
-          h1.addEventListener('mouseleave', hideOriginalText);
+    // Function to convert text to uppercase and store original
+    function convertElementsToUpperCase() {
+      config.targetElements.forEach(elementType => {
+        const elements = document.getElementsByTagName(elementType);
+        
+        for (const element of elements) {
+          if (element.textContent && !element.hasAttribute('data-original-text')) {
+            // Store original text
+            const originalText = element.textContent;
+            element.setAttribute('data-original-text', originalText);
+            
+            // Convert to uppercase
+            element.textContent = originalText.toUpperCase();
+            
+            // Add hover listeners
+            element.addEventListener('mouseenter', (e: Event) => showOriginalText(e as MouseEvent));
+            element.addEventListener('mouseleave', (e: Event) => hideOriginalText(e as MouseEvent));
+          }
         }
-      }
+      });
     }
 
     // Show original text tooltip
     function showOriginalText(event: MouseEvent) {
-      const h1 = event.target as HTMLElement;
-      const originalText = h1.getAttribute('data-original-text');
+      const element = event.target as HTMLElement;
+      const originalText = element.getAttribute('data-original-text');
       
       if (originalText) {
         const tooltip = document.createElement('div');
-        tooltip.className = 'original-text-tooltip';
+        tooltip.className = config.tooltipClass;
         tooltip.textContent = originalText;
         
-        // Position tooltip above the h1
-        const rect = h1.getBoundingClientRect();
+        // Position tooltip above the element
+        const rect = element.getBoundingClientRect();
         tooltip.style.left = `${rect.left + window.scrollX}px`;
         tooltip.style.top = `${rect.top + window.scrollY}px`;
         
-        // Add a random ID to connect tooltip with h1
+        // Add a random ID to connect tooltip with element
         const tooltipId = `tooltip-${Math.random().toString(36).substr(2, 9)}`;
         tooltip.setAttribute('data-tooltip-id', tooltipId);
         tooltip.setAttribute('id', tooltipId);
-        h1.setAttribute('data-tooltip-id', tooltipId);
+        element.setAttribute('data-tooltip-id', tooltipId);
         
         document.body.appendChild(tooltip);
       }
@@ -67,34 +75,40 @@ export default defineContentScript({
 
     // Hide original text tooltip
     function hideOriginalText(event: MouseEvent) {
-      const h1 = event.target as HTMLElement;
-      const tooltipId = h1.getAttribute('data-tooltip-id');
+      const element = event.target as HTMLElement;
+      const tooltipId = element.getAttribute('data-tooltip-id');
       if (tooltipId) {
         const tooltip = document.querySelector(`#${tooltipId}`);
         if (tooltip) {
           tooltip.remove();
         }
-        h1.removeAttribute('data-tooltip-id');
+        element.removeAttribute('data-tooltip-id');
       }
     }
 
     // Run the conversion immediately
-    convertH1sToUpperCase();
+    convertElementsToUpperCase();
 
-    // Also handle dynamically added h1s using MutationObserver
+    // Also handle dynamically added elements using MutationObserver
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.addedNodes.length) {
-          // Check if any of the added nodes are h1s or contain h1s
+          // Check if any of the added nodes are target elements or contain target elements
           mutation.addedNodes.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
-              if ((node as Element).tagName === 'H1') {
-                convertH1sToUpperCase(); // This will handle the new h1
+              const element = node as Element;
+              if (config.targetElements.includes(element.tagName.toLowerCase())) {
+                convertElementsToUpperCase();
               } else {
-                // Check for h1s inside the added element
-                const h1s = (node as Element).getElementsByTagName('h1');
-                if (h1s.length > 0) {
-                  convertH1sToUpperCase(); // This will handle any new h1s
+                // Check for target elements inside the added element
+                let hasTargetElements = false;
+                config.targetElements.forEach(elementType => {
+                  if (element.getElementsByTagName(elementType).length > 0) {
+                    hasTargetElements = true;
+                  }
+                });
+                if (hasTargetElements) {
+                  convertElementsToUpperCase();
                 }
               }
             }
