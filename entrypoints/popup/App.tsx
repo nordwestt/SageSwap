@@ -9,9 +9,15 @@ interface ElementSettings {
   h1: boolean;
   h2: boolean;
   h3: boolean;
-  p: boolean;
   quizMode: boolean;
 }
+
+const settingLabels = {
+  h1: 'Headings',
+  h2: 'Medium Headings',
+  h3: 'Small Headings',
+  quizMode: 'Quiz Mode',
+} as const;
 
 // Common language options
 const LANGUAGE_OPTIONS = [
@@ -30,7 +36,6 @@ function App() {
     h1: true,
     h2: false,
     h3: false,
-    p: false,
     quizMode: false,
   });
   const [apiKey, setApiKey] = useState('');
@@ -223,16 +228,17 @@ function App() {
               <input
                 type="checkbox"
                 checked={isEnabled}
+                className="w-4 h-4 !accent-emerald-600"
                 onChange={() => handleSettingChange(elementType as keyof ElementSettings)}
               />
-              <span className="element-type">{elementType.toUpperCase()}</span>
+              <span className="element-type">{settingLabels[elementType as keyof typeof settingLabels]}</span>
             </label>
           )
         ))}
       </div>
       </div>
       
-      <div className="quiz-mode-section">
+      {/* <div className="quiz-mode-section">
         <label className="setting-item quiz-mode">
           <input
             type="checkbox"
@@ -244,7 +250,7 @@ function App() {
         <p className="help-text">
           When enabled, test your language skills by choosing the correct original text
         </p>
-      </div>
+      </div> */}
     </div>
     </>
   );

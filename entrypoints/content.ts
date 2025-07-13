@@ -2,6 +2,8 @@ import { storage } from '#imports';
 import { getTranslationService } from '../src/translation.service';
 import '../assets/content.css';
 
+let revealedTexts: Record<string, boolean> = {};
+
 // Function to generate text variants for quiz
 async function generateTextVariants(text: string): Promise<string[]> {
   const variants = [text];
@@ -26,29 +28,37 @@ function createQuizUI(originalText: string, variants: string[], element: HTMLEle
     optionWrapper.className = 'quiz-option-wrapper';
 
     const button = document.createElement('button');
-    button.className = 'quiz-option blurred';
-    button.textContent = variant;
+    button.className = 'quiz-option';
     
+    button.textContent = variant;
     // Add the "click to reveal" text as an overlay
     const revealText = document.createElement('span');
     revealText.className = 'reveal-text-overlay';
     revealText.textContent = 'click to reveal...';
-    
+    revealText.style.display = 'none';
+
+    if(!revealedTexts[variant]) {
+      button.classList.add('blurred');
+      revealText.style.display = 'block';
+    }
+
+
     button.addEventListener('click', () => {
       button.classList.remove('blurred');
       revealText.style.display = 'none';
+      revealedTexts[variant] = true;
 
       // Check if the answer is correct
-      const isCorrect = variant === variants[0]; // First variant is always the correct one
+      // const isCorrect = variant === variants[0]; // First variant is always the correct one
       
       // Add result icon
-      const resultIcon = document.createElement('div');
-      resultIcon.className = `result-icon ${isCorrect ? 'correct' : 'incorrect'}`;
-      resultIcon.innerHTML = isCorrect ? '✓' : '✗';
-      quizContainer.appendChild(resultIcon);
+      // const resultIcon = document.createElement('div');
+      // resultIcon.className = `result-icon ${isCorrect ? 'correct' : 'incorrect'}`;
+      // resultIcon.innerHTML = isCorrect ? '✓' : '✗';
+      // quizContainer.appendChild(resultIcon);
       
-      // Highlight the selected option
-      button.classList.add(isCorrect ? 'correct' : 'incorrect');
+      // // Highlight the selected option
+      // button.classList.add(isCorrect ? 'correct' : 'incorrect');
       
       // Disable all buttons
       quizContainer.querySelectorAll('button').forEach(btn => {
@@ -146,6 +156,7 @@ export default defineContentScript({
           // Add hover listeners
           element.addEventListener('mouseenter', showOriginalText as EventListener);
           element.addEventListener('mouseleave', hideOriginalText as EventListener);
+          element.addEventListener('click', onTranslatedTextClick as EventListener);
           
           element.removeAttribute('data-translation-in-progress');
         } catch (error) {
@@ -168,6 +179,10 @@ export default defineContentScript({
           }
         }
       }, timeout);
+    }
+
+    async function onTranslatedTextClick(event: Event) {
+      const element = event.target as HTMLElement;
     }
 
     // Show original text tooltip or quiz

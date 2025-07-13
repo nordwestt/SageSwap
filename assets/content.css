@@ -77,7 +77,7 @@
 
 /* Translated element styles */
 .translated-element {
-  @apply rounded-lg !p-1 !text-white transition-all duration-300 ease-in-out bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 hover:opacity-80;
+  @apply rounded-lg !p-1 !text-white transition-all duration-300 ease-in-out bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 hover:opacity-80 cursor-pointer;
 }
 
 .quiz-option-wrapper {
