@@ -56,7 +56,6 @@ class TranslationService {
   }
 
   async translateWithDeepL(text: string, source: string, target: string): Promise<string> {
-    return "We did it!";
     
     // Check cache first
     const cachedTranslation = await this.getCachedTranslation(text, source, target);
