@@ -159,7 +159,6 @@ export default defineContentScript({
     }
 
     function hideQuiz(quizContainerId: string, timeout: number = 300){
-      return;
       showQuiz[quizContainerId] = false;
       setTimeout(() => {
         if (!showQuiz[quizContainerId]) {
