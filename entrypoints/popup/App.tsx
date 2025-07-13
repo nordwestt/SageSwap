@@ -20,14 +20,14 @@ function App() {
     p: false,
   });
 
-  // // Load settings when popup opens
-  // useEffect(() => {
-  //   browser.storage.sync.get('elementSettings').then((result) => {
-  //     if (result.elementSettings) {
-  //       setSettings(result.elementSettings);
-  //     }
-  //   });
-  // }, []);
+  // Load settings when popup opens
+  useEffect(() => {
+    storage.getItem('local:elementSettings').then((result: any) => {
+      if (result) {
+        setSettings(result);
+      }
+    });
+  }, []);
 
   // // Save settings when they change
   const handleSettingChange = (elementType: keyof ElementSettings) => {
@@ -36,7 +36,7 @@ function App() {
       [elementType]: !settings[elementType],
     };
     setSettings(newSettings);
-    
+
     // Save to browser storage
     storage.setItem('local:elementSettings', newSettings);
   };

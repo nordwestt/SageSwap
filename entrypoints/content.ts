@@ -20,7 +20,7 @@ export default defineContentScript({
   async main() {
     // Get settings from storage
     const result = await storage.getItem<any>('local:elementSettings') || {};
-    const elementSettings = result.elementSettings || {
+    const elementSettings = result || {
       h1: true,
       h2: false,
       h3: false,
@@ -53,7 +53,6 @@ export default defineContentScript({
       }
 
       .translated-element {
-        position: relative;
         background: linear-gradient(120deg, rgba(108, 99, 255, 0.8), rgba(74, 144, 226, 0.8), rgba(255, 107, 237, 0.8));
         border-radius: 8px;
         padding: 6px !important;
