@@ -10,36 +10,9 @@ export async function translateText({
   source: string;
   target: string;
 }): Promise<string> {
-  const apiKey = "";
-  
   const translationService = getTranslationService();
   const translatedText = await translationService.translateWithDeepL(text, source, target);
-  console.log(translatedText);
   return translatedText;
-  if (!apiKey) {
-    throw new Error("Missing DeepL API key.");
-  }
-
-  const response = await fetch("https://api.deepl.com/v2/translate", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `DeepL-Auth-Key ${apiKey}`,
-    },
-    body: JSON.stringify({
-      text: [text],
-      target_lang: target,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`DeepL API error: ${response.status} - ${errorText}`);
-  }
-
-  const result = await response.json();
-
-  return result.translations[0].text;
 }
 
 export default defineContentScript({
