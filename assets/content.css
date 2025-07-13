@@ -79,3 +79,42 @@
 .translated-element {
   @apply rounded-lg !p-1 !text-white transition-all duration-300 ease-in-out bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 hover:opacity-80;
 }
+
+.quiz-option-wrapper {
+  position: relative;
+}
+
+.reveal-text-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #666;
+  font-size: 0.9em;
+  font-style: italic;
+  font-weight: 600;
+  width: 100%;
+  text-align: center;
+  pointer-events: none; /* This allows clicks to pass through to the button */
+  z-index: 1;
+  text-shadow: 0 0 2px white; /* Makes text more readable */
+}
+
+.quiz-option {
+  position: relative;
+  width: 100%;
+}
+
+.quiz-option.blurred {
+  filter: blur(5px);
+  transition: filter 0.3s ease;
+}
+
+.quiz-option.blurred:hover {
+  filter: blur(4px);
+}
+
+.quiz-option:not(.blurred) {
+  filter: blur(0);
+  transition: filter 0.3s ease;
+}

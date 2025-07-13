@@ -21,11 +21,23 @@ function createQuizUI(originalText: string, variants: string[], element: HTMLEle
   quizContainer.className = 'quiz-options quiz-container';
   
   variants.forEach((variant, index) => {
+    // Create a wrapper div for each option
+    const optionWrapper = document.createElement('div');
+    optionWrapper.className = 'quiz-option-wrapper';
+
     const button = document.createElement('button');
-    button.className = 'quiz-option';
+    button.className = 'quiz-option blurred';
     button.textContent = variant;
     
+    // Add the "click to reveal" text as an overlay
+    const revealText = document.createElement('span');
+    revealText.className = 'reveal-text-overlay';
+    revealText.textContent = 'click to reveal...';
+    
     button.addEventListener('click', () => {
+      button.classList.remove('blurred');
+      revealText.style.display = 'none';
+
       // Check if the answer is correct
       const isCorrect = variant === variants[0]; // First variant is always the correct one
       
@@ -49,8 +61,10 @@ function createQuizUI(originalText: string, variants: string[], element: HTMLEle
         quizContainer.remove();
       }, 2000);
     });
-    
-    quizContainer.appendChild(button);
+    optionWrapper.appendChild(button);
+    optionWrapper.appendChild(revealText); // Add the reveal text after the button
+
+    quizContainer.appendChild(optionWrapper);
   });
   
   return quizContainer;
@@ -145,6 +159,7 @@ export default defineContentScript({
     }
 
     function hideQuiz(quizContainerId: string, timeout: number = 300){
+      return;
       showQuiz[quizContainerId] = false;
       setTimeout(() => {
         if (!showQuiz[quizContainerId]) {
