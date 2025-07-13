@@ -9,8 +9,73 @@
   margin-top: -8px;
 }
 
+/* Quiz mode styles */
+.quiz-options {
+  @apply absolute bg-white border border-gray-300 rounded-lg p-2 z-[10000] shadow-lg;
+  transform: translateY(-100%);
+  margin-top: -8px;
+  min-width: 200px;
+}
+
+.quiz-option {
+  @apply block w-full text-left px-3 py-2 rounded-md mb-1 last:mb-0 cursor-pointer 
+         transition-all duration-200 hover:bg-gray-100;
+}
+
+.quiz-option.correct {
+  @apply bg-green-100 hover:bg-green-200;
+}
+
+.quiz-option.incorrect {
+  @apply bg-red-100 hover:bg-red-200;
+}
+
+/* Animation keyframes */
+@keyframes checkmark {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes cross {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+    opacity: 1;
+  }
+}
+
+.result-icon {
+  @apply absolute -top-2 -right-2 w-6 h-6 flex items-center justify-center rounded-full;
+  animation-duration: 0.5s;
+  animation-fill-mode: forwards;
+}
+
+.result-icon.correct {
+  @apply bg-green-500 text-white;
+  animation-name: checkmark;
+}
+
+.result-icon.incorrect {
+  @apply bg-red-500 text-white;
+  animation-name: cross;
+}
+
 /* Translated element styles */
 .translated-element {
-  @apply rounded-lg !p-1 text-white transition-all duration-300 ease-in-out bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 hover:opacity-80;
-  /* background: linear-gradient(120deg, rgba(108, 99, 255, 0.8), rgba(74, 144, 226, 0.8), rgba(255, 107, 237, 0.8)); */
+  @apply rounded-lg !p-1 !text-white transition-all duration-300 ease-in-out bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 hover:opacity-80;
 }

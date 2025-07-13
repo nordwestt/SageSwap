@@ -2,6 +2,59 @@ import { storage } from '#imports';
 import { getTranslationService } from '../src/translation.service';
 import '../assets/content.css';
 
+// Function to generate text variants for quiz
+async function generateTextVariants(text: string): Promise<string[]> {
+  const variants = [text];
+  // Generate variants by slightly modifying the original text
+  for (let i = 0; i < 2; i++) {
+    const variant = text.split(' ').map(word => word + ' ' + Math.random().toString(36).substring(2, 5)).join(' ');
+    variants.push(variant);
+  }
+  
+  // Shuffle the array
+  return variants.sort(() => Math.random() - 0.5);
+}
+
+// Function to create quiz UI
+function createQuizUI(originalText: string, variants: string[], element: HTMLElement): HTMLElement {
+  const quizContainer = document.createElement('div');
+  quizContainer.className = 'quiz-options quiz-container';
+  
+  variants.forEach((variant, index) => {
+    const button = document.createElement('button');
+    button.className = 'quiz-option';
+    button.textContent = variant;
+    
+    button.addEventListener('click', () => {
+      // Check if the answer is correct
+      const isCorrect = variant === variants[0]; // First variant is always the correct one
+      
+      // Add result icon
+      const resultIcon = document.createElement('div');
+      resultIcon.className = `result-icon ${isCorrect ? 'correct' : 'incorrect'}`;
+      resultIcon.innerHTML = isCorrect ? '✓' : '✗';
+      quizContainer.appendChild(resultIcon);
+      
+      // Highlight the selected option
+      button.classList.add(isCorrect ? 'correct' : 'incorrect');
+      
+      // Disable all buttons
+      quizContainer.querySelectorAll('button').forEach(btn => {
+        btn.disabled = true;
+      });
+      
+      // Remove the quiz after a delay
+      setTimeout(() => {
+        quizContainer.remove();
+      }, 2000);
+    });
+    
+    quizContainer.appendChild(button);
+  });
+  
+  return quizContainer;
+}
+
 export async function translateText({
   text,
   source,
@@ -26,7 +79,11 @@ export default defineContentScript({
       h2: false,
       h3: false,
       p: false,
+      quizMode: false,
     };
+
+    let showQuiz = false;
+
 
     // Get target language from storage
     const targetLanguage = await storage.getItem<string>('local:targetLanguage') || 'es';
@@ -34,10 +91,11 @@ export default defineContentScript({
     // Configuration object
     const config = {
       targetElements: Object.entries(elementSettings)
-        .filter(([_, isEnabled]) => isEnabled)
+        .filter(([key, isEnabled]) => isEnabled && key !== 'quizMode')
         .map(([elementType]) => elementType),
       tooltipClass: 'original-text-tooltip',
       targetLanguage,
+      quizMode: elementSettings.quizMode
     };
 
     // Function to translate a single element
@@ -74,42 +132,59 @@ export default defineContentScript({
       }
     }
 
-    // Show original text tooltip
-    function showOriginalText(event: MouseEvent) {
+    function hideQuiz(quizContainerId: string){
+      showQuiz = false;
+      setTimeout(() => {
+        if (!showQuiz) {
+          const quizContainer = document.querySelector(`#${quizContainerId}`);
+          if (quizContainer) {
+            quizContainer.remove();
+          }
+        }
+      }, 300);
+    }
+
+    // Show original text tooltip or quiz
+    async function showOriginalText(event: Event) {
       const element = event.target as HTMLElement;
       const originalText = element.getAttribute('data-original-text');
       
-      if (originalText) {
-        const tooltip = document.createElement('div');
-        tooltip.className = config.tooltipClass;
-        tooltip.textContent = originalText;
+      if (!originalText) return;
+
+      
+      // Generate variants and create quiz UI
+      // const variants = await generateTextVariants(originalText);
+      const quizContainerId = element.getAttribute('data-quiz-container-id');
+      const quizContainer = createQuizUI(originalText, [originalText], element);
+      quizContainer.id = quizContainerId ?? Math.random().toString(36).substring(2, 15);
+      
+      // Position quiz container
+      const rect = element.getBoundingClientRect();
+      quizContainer.style.left = `${rect.left + window.scrollX}px`;
+      quizContainer.style.top = `${rect.top + window.scrollY}px`;
+      quizContainer.addEventListener('mouseenter', () => {
+        showQuiz = true;
+      });
+      quizContainer.addEventListener('mouseleave', () => {
+        hideQuiz(quizContainer.id);
+      });
+      
+      document.body.appendChild(quizContainer);
+      
+      // Store reference to quiz container
+      element.setAttribute('data-quiz-container-id', quizContainer.id);
+      showQuiz = true;
         
-        // Position tooltip above the element
-        const rect = element.getBoundingClientRect();
-        tooltip.style.left = `${rect.left + window.scrollX}px`;
-        tooltip.style.top = `${rect.top + window.scrollY}px`;
-        
-        // Add a random ID to connect tooltip with element
-        const tooltipId = `tooltip-${Math.random().toString(36).substr(2, 9)}`;
-        tooltip.setAttribute('data-tooltip-id', tooltipId);
-        tooltip.setAttribute('id', tooltipId);
-        element.setAttribute('data-tooltip-id', tooltipId);
-        
-        document.body.appendChild(tooltip);
-      }
     }
 
-    // Hide original text tooltip
-    function hideOriginalText(event: MouseEvent) {
+    // Hide original text tooltip or quiz
+    function hideOriginalText(event: Event) {
       const element = event.target as HTMLElement;
-      const tooltipId = element.getAttribute('data-tooltip-id');
-      if (tooltipId) {
-        const tooltip = document.querySelector(`#${tooltipId}`);
-        if (tooltip) {
-          tooltip.remove();
-        }
-        element.removeAttribute('data-tooltip-id');
-      }
+      
+      // Remove quiz container if exists
+      const quizContainerId = element.getAttribute('data-quiz-container-id');
+      if (!quizContainerId) return;
+      hideQuiz(quizContainerId);
     }
 
     // Function to reset all transformed elements
@@ -163,8 +238,10 @@ export default defineContentScript({
         const newSettings = changes.elementSettings.newValue;
         // Update config
         config.targetElements = Object.entries(newSettings)
-          .filter(([_, isEnabled]) => isEnabled)
+          .filter(([key, isEnabled]) => isEnabled && key !== 'quizMode')
           .map(([elementType]) => elementType);
+        
+        config.quizMode = newSettings.quizMode;
         
         // Reset all elements and reapply with new settings
         resetElements();

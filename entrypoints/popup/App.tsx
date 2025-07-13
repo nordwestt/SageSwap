@@ -10,6 +10,7 @@ interface ElementSettings {
   h2: boolean;
   h3: boolean;
   p: boolean;
+  quizMode: boolean;
 }
 
 // Common language options
@@ -30,6 +31,7 @@ function App() {
     h2: false,
     h3: false,
     p: false,
+    quizMode: false,
   });
   const [apiKey, setApiKey] = useState('');
   const [targetLanguage, setTargetLanguage] = useState('es');
@@ -123,19 +125,32 @@ function App() {
       <h2>Text Transform Settings</h2>
       <div className="settings-grid">
         {Object.entries(settings).map(([elementType, isEnabled]) => (
-          <label key={elementType} className="setting-item">
-            <input
-              type="checkbox"
-              checked={isEnabled}
-              onChange={() => handleSettingChange(elementType as keyof ElementSettings)}
-            />
-            <span className="element-type">{elementType.toUpperCase()}</span>
-          </label>
+          elementType !== 'quizMode' && (
+            <label key={elementType} className="setting-item">
+              <input
+                type="checkbox"
+                checked={isEnabled}
+                onChange={() => handleSettingChange(elementType as keyof ElementSettings)}
+              />
+              <span className="element-type">{elementType.toUpperCase()}</span>
+            </label>
+          )
         ))}
       </div>
-      <p className="help-text">
-        Select which elements should be transformed to uppercase
-      </p>
+      
+      <div className="quiz-mode-section">
+        <label className="setting-item quiz-mode">
+          <input
+            type="checkbox"
+            checked={settings.quizMode}
+            onChange={() => handleSettingChange('quizMode')}
+          />
+          <span className="element-type">Quiz Mode</span>
+        </label>
+        <p className="help-text">
+          When enabled, test your language skills by choosing the correct original text
+        </p>
+      </div>
     </div>
     </>
   );
