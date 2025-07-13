@@ -68,38 +68,36 @@ export default defineContentScript({
     `;
     document.head.appendChild(style);
 
-    // Function to translate text to Spanish and store original
-    async function translateElementsToSpanish() {
-      for (const elementType of config.targetElements) {
-        const elements = document.getElementsByTagName(elementType);
-        
-        for (const element of elements) {
-          if (element.textContent && !element.hasAttribute('data-original-text')) {
-            try {
-              element.classList.add('translated-element');
-              // Store original text
-              const originalText = element.textContent;
-              element.setAttribute('data-original-text', originalText);
-              
-              // Translate to Spanish
-              const translatedText = await translateText({
-                text: originalText,
-                source: 'en',
-                target: 'es'
-              });
-              element.textContent = translatedText;
-              
-              // Add hover listeners
-              element.addEventListener('mouseenter', showOriginalText as EventListener);
-              element.addEventListener('mouseleave', hideOriginalText as EventListener);
-            } catch (error) {
-              console.error('Translation error:', error);
-              // If translation fails, keep original text
-              if (!element.hasAttribute('data-original-text')) {
-                element.removeAttribute('data-original-text');
-              }
-            }
-          }
+    // Function to translate a single element
+    async function translateElement(element: HTMLElement) {
+      if (element.textContent && !element.hasAttribute('data-original-text') && !element.hasAttribute('data-translation-in-progress')) {
+        try {
+          element.setAttribute('data-translation-in-progress', 'true');
+          element.classList.add('translated-element');
+          
+          // Store original text
+          const originalText = element.textContent;
+          element.setAttribute('data-original-text', originalText);
+          
+          // Translate to Spanish
+          const translatedText = await translateText({
+            text: originalText,
+            source: 'en',
+            target: 'es'
+          });
+          element.textContent = translatedText;
+          
+          // Add hover listeners
+          element.addEventListener('mouseenter', showOriginalText as EventListener);
+          element.addEventListener('mouseleave', hideOriginalText as EventListener);
+          
+          element.removeAttribute('data-translation-in-progress');
+        } catch (error) {
+          console.error('Translation error:', error);
+          // If translation fails, revert changes
+          element.removeAttribute('data-original-text');
+          element.removeAttribute('data-translation-in-progress');
+          element.classList.remove('translated-element');
         }
       }
     }
@@ -149,11 +147,42 @@ export default defineContentScript({
         if (originalText) {
           element.textContent = originalText;
           element.removeAttribute('data-original-text');
+          element.removeAttribute('data-translation-in-progress');
           element.classList.remove('translated-element');
           element.removeEventListener('mouseenter', showOriginalText as EventListener);
           element.removeEventListener('mouseleave', hideOriginalText as EventListener);
         }
       });
+    }
+
+    // Create Intersection Observer
+    const observerCallback: IntersectionObserverCallback = (entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const element = entry.target as HTMLElement;
+          translateElement(element);
+          // Stop observing this element once it's been translated
+          observer.unobserve(element);
+        }
+      });
+    };
+
+    const intersectionObserver = new IntersectionObserver(observerCallback, {
+      root: null,
+      rootMargin: '50px', // Start translating slightly before elements enter the viewport
+      threshold: 0.1
+    });
+
+    // Function to start observing elements
+    function observeElements() {
+      for (const elementType of config.targetElements) {
+        const elements = document.getElementsByTagName(elementType);
+        for (const element of elements) {
+          if (!element.hasAttribute('data-original-text') && !element.hasAttribute('data-translation-in-progress')) {
+            intersectionObserver.observe(element);
+          }
+        }
+      }
     }
 
     // Listen for settings changes
@@ -167,35 +196,32 @@ export default defineContentScript({
         
         // Reset all elements and reapply with new settings
         resetElements();
-        translateElementsToSpanish();
+        observeElements();
       }
     });
 
-    // Run the initial translation
-    translateElementsToSpanish();
+    // Start observing initial elements
+    observeElements();
 
-    // Also handle dynamically added elements using MutationObserver
-    const observer = new MutationObserver((mutations) => {
+    // Handle dynamically added elements using MutationObserver
+    const mutationObserver = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.addedNodes.length) {
-          // Check if any of the added nodes are target elements or contain target elements
           mutation.addedNodes.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
               const element = node as Element;
               if (config.targetElements.includes(element.tagName.toLowerCase())) {
-                translateElementsToSpanish();
-              } else {
-                // Check for target elements inside the added element
-                let hasTargetElements = false;
-                config.targetElements.forEach(elementType => {
-                  if (element.getElementsByTagName(elementType).length > 0) {
-                    hasTargetElements = true;
+                intersectionObserver.observe(element);
+              }
+              // Check for target elements inside the added element
+              config.targetElements.forEach(elementType => {
+                Array.from(element.getElementsByTagName(elementType)).forEach((el: Element) => {
+                  const htmlElement = el as HTMLElement;
+                  if (!htmlElement.hasAttribute('data-original-text') && !htmlElement.hasAttribute('data-translation-in-progress')) {
+                    intersectionObserver.observe(htmlElement);
                   }
                 });
-                if (hasTargetElements) {
-                  translateElementsToSpanish();
-                }
-              }
+              });
             }
           });
         }
@@ -203,7 +229,7 @@ export default defineContentScript({
     });
 
     // Observe the entire document for added nodes
-    observer.observe(document.body, {
+    mutationObserver.observe(document.body, {
       childList: true,
       subtree: true
     });
