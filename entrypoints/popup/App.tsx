@@ -142,7 +142,12 @@ function App() {
   return (
     <>
     <div className="settings-container bg-gradient-to-br from-emerald-600 to-emerald-300">
-      <h1 className="!text-white !text-2xl font-bold p-4">🌿 SwapSage</h1>
+    
+      <h1 className="!text-white !text-2xl font-bold p-4 flex items-center justify-between"><img
+            src="/icon/96.png"
+            alt="logo"
+            className="w-16 h-16 mr-2 border-2 p-1 bg-white rounded-full shadow-lg"
+          /> Swap Sage</h1>
       
       <div className="api-key-section">
         <h2 className="text-lg font-bold mb-4">DeepL API Key</h2>
