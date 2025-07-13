@@ -54,8 +54,8 @@ export default defineContentScript({
             element.textContent = originalText.toUpperCase();
             
             // Add hover listeners
-            element.addEventListener('mouseenter', (e: Event) => showOriginalText(e as MouseEvent));
-            element.addEventListener('mouseleave', (e: Event) => hideOriginalText(e as MouseEvent));
+            element.addEventListener('mouseenter', showOriginalText as EventListener);
+            element.addEventListener('mouseleave', hideOriginalText as EventListener);
           }
         }
       });
@@ -63,6 +63,7 @@ export default defineContentScript({
 
     // Show original text tooltip
     function showOriginalText(event: MouseEvent) {
+      console.log("showOriginalText",event);
       const element = event.target as HTMLElement;
       const originalText = element.getAttribute('data-original-text');
       
@@ -88,6 +89,7 @@ export default defineContentScript({
 
     // Hide original text tooltip
     function hideOriginalText(event: MouseEvent) {
+      console.log("hideOriginalText",event);
       const element = event.target as HTMLElement;
       const tooltipId = element.getAttribute('data-tooltip-id');
       if (tooltipId) {
@@ -106,8 +108,8 @@ export default defineContentScript({
         if (originalText) {
           element.textContent = originalText;
           element.removeAttribute('data-original-text');
-          element.removeEventListener('mouseenter', (e: Event) => showOriginalText(e as MouseEvent));
-          element.removeEventListener('mouseleave', (e: Event) => hideOriginalText(e as MouseEvent));
+          element.removeEventListener('mouseenter', showOriginalText as EventListener);
+          element.removeEventListener('mouseleave', hideOriginalText as EventListener);
         }
       });
     }
