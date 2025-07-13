@@ -1,33 +1,66 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import reactLogo from '@/assets/react.svg';
 import wxtLogo from '/wxt.svg';
 import './App.css';
+import { storage } from '#imports';
+
+
+interface ElementSettings {
+  h1: boolean;
+  h2: boolean;
+  h3: boolean;
+  p: boolean;
+}
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [settings, setSettings] = useState<ElementSettings>({
+    h1: true,
+    h2: false,
+    h3: false,
+    p: false,
+  });
+
+  // // Load settings when popup opens
+  // useEffect(() => {
+  //   browser.storage.sync.get('elementSettings').then((result) => {
+  //     if (result.elementSettings) {
+  //       setSettings(result.elementSettings);
+  //     }
+  //   });
+  // }, []);
+
+  // // Save settings when they change
+  const handleSettingChange = (elementType: keyof ElementSettings) => {
+    const newSettings = {
+      ...settings,
+      [elementType]: !settings[elementType],
+    };
+    setSettings(newSettings);
+    
+    // Save to browser storage
+    storage.setItem('local:elementSettings', newSettings);
+  };
 
   return (
     <>
-      <div>
-        <a href="https://wxt.dev" target="_blank">
-          <img src={wxtLogo} className="logo" alt="WXT logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="settings-container">
+      <h1>Text Transform Settings</h1>
+      <div className="settings-grid">
+        {Object.entries(settings).map(([elementType, isEnabled]) => (
+          <label key={elementType} className="setting-item">
+            <input
+              type="checkbox"
+              checked={isEnabled}
+              onChange={() => handleSettingChange(elementType as keyof ElementSettings)}
+            />
+            <span className="element-type">{elementType.toUpperCase()}</span>
+          </label>
+        ))}
       </div>
-      <h1>WXT + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the WXT and React logos to learn more
+      <p className="help-text">
+        Select which elements should be transformed to uppercase
       </p>
+    </div>
     </>
   );
 }

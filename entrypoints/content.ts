@@ -1,9 +1,21 @@
+import { storage } from '#imports';
 export default defineContentScript({
   matches: ['<all_urls>'],
-  main() {
+  async main() {
+    // Get settings from storage
+    const result = await storage.getItem<any>('local:elementSettings') || {};
+    const elementSettings = result.elementSettings || {
+      h1: true,
+      h2: false,
+      h3: false,
+      p: false,
+    };
+
     // Configuration object
     const config = {
-      targetElements: ['h1', 'h2', 'h3'], // Add or remove elements as needed
+      targetElements: Object.entries(elementSettings)
+        .filter(([_, isEnabled]) => isEnabled)
+        .map(([elementType]) => elementType),
       tooltipClass: 'original-text-tooltip'
     };
 
@@ -32,6 +44,7 @@ export default defineContentScript({
         const elements = document.getElementsByTagName(elementType);
         
         for (const element of elements) {
+          console.log("element",element);
           if (element.textContent && !element.hasAttribute('data-original-text')) {
             // Store original text
             const originalText = element.textContent;
@@ -86,7 +99,35 @@ export default defineContentScript({
       }
     }
 
-    // Run the conversion immediately
+    // Function to reset all transformed elements
+    function resetElements() {
+      document.querySelectorAll('[data-original-text]').forEach((element) => {
+        const originalText = element.getAttribute('data-original-text');
+        if (originalText) {
+          element.textContent = originalText;
+          element.removeAttribute('data-original-text');
+          element.removeEventListener('mouseenter', (e: Event) => showOriginalText(e as MouseEvent));
+          element.removeEventListener('mouseleave', (e: Event) => hideOriginalText(e as MouseEvent));
+        }
+      });
+    }
+
+    // Listen for settings changes
+    browser.storage.onChanged.addListener((changes) => {
+      if (changes.elementSettings) {
+        const newSettings = changes.elementSettings.newValue;
+        // Update config
+        config.targetElements = Object.entries(newSettings)
+          .filter(([_, isEnabled]) => isEnabled)
+          .map(([elementType]) => elementType);
+        
+        // Reset all elements and reapply with new settings
+        resetElements();
+        convertElementsToUpperCase();
+      }
+    });
+
+    // Run the initial conversion
     convertElementsToUpperCase();
 
     // Also handle dynamically added elements using MutationObserver
