@@ -87,11 +87,11 @@ function App() {
 
   return (
     <>
-    <div className="settings-container">
-      <h1>SwapSage Settings</h1>
+    <div className="settings-container bg-gradient-to-br from-emerald-600 to-emerald-300">
+      <h1 className="!text-white !text-2xl font-bold p-4">🌿 SwapSage</h1>
       
       <div className="api-key-section">
-        <h2>DeepL API Key</h2>
+        <h2 className="text-lg font-bold mb-4">DeepL API Key</h2>
         <input
           type="password"
           value={apiKey}
@@ -105,7 +105,7 @@ function App() {
       </div>
 
       <div className="language-section">
-        <h2>Target Language</h2>
+        <h2 className="text-lg font-bold mb-4">Target Language</h2>
         <select
           value={targetLanguage}
           onChange={handleLanguageChange}
@@ -122,11 +122,12 @@ function App() {
         </p>
       </div>
 
-      <h2>Text Transform Settings</h2>
-      <div className="settings-grid">
+      <div className="bg-gray-100 p-4 rounded-lg">
+      <h2 className="text-lg font-bold mb-4">Text Transform Settings</h2>
+      <div className="grid grid-cols-2 gap-4">
         {Object.entries(settings).map(([elementType, isEnabled]) => (
           elementType !== 'quizMode' && (
-            <label key={elementType} className="setting-item">
+            <label key={elementType} className="flex items-center gap-2 bg-white p-2 rounded-lg cursor-pointer hover:bg-gray-200">
               <input
                 type="checkbox"
                 checked={isEnabled}
@@ -136,6 +137,7 @@ function App() {
             </label>
           )
         ))}
+      </div>
       </div>
       
       <div className="quiz-mode-section">

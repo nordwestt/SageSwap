@@ -42,8 +42,9 @@ function createQuizUI(originalText: string, variants: string[], element: HTMLEle
       quizContainer.querySelectorAll('button').forEach(btn => {
         btn.disabled = true;
       });
+
       
-      // Remove the quiz after a delay
+      // // Remove the quiz after a delay
       setTimeout(() => {
         quizContainer.remove();
       }, 2000);
@@ -82,7 +83,9 @@ export default defineContentScript({
       quizMode: false,
     };
 
-    let showQuiz = false;
+    // let showQuiz = false;
+
+    let showQuiz: Record<string, boolean> = {};
 
 
     // Get target language from storage
@@ -132,16 +135,16 @@ export default defineContentScript({
       }
     }
 
-    function hideQuiz(quizContainerId: string){
-      showQuiz = false;
+    function hideQuiz(quizContainerId: string, timeout: number = 300){
+      showQuiz[quizContainerId] = false;
       setTimeout(() => {
-        if (!showQuiz) {
+        if (!showQuiz[quizContainerId]) {
           const quizContainer = document.querySelector(`#${quizContainerId}`);
           if (quizContainer) {
             quizContainer.remove();
           }
         }
-      }, 300);
+      }, timeout);
     }
 
     // Show original text tooltip or quiz
@@ -167,7 +170,7 @@ export default defineContentScript({
       quizContainer.style.left = `${rect.left + window.scrollX}px`;
       quizContainer.style.top = `${rect.top + window.scrollY}px`;
       quizContainer.addEventListener('mouseenter', () => {
-        showQuiz = true;
+        showQuiz[quizContainer.id] = true;
       });
       quizContainer.addEventListener('mouseleave', () => {
         hideQuiz(quizContainer.id);
@@ -177,7 +180,7 @@ export default defineContentScript({
       
       // Store reference to quiz container
       element.setAttribute('data-quiz-container-id', quizContainer.id);
-      showQuiz = true;
+      showQuiz[quizContainer.id] = true;
         
     }
 
