@@ -1,5 +1,6 @@
 import { storage } from '#imports';
 import { getTranslationService } from '../src/translation.service';
+import '../assets/content.css';
 
 export async function translateText({
   text,
@@ -38,39 +39,6 @@ export default defineContentScript({
       tooltipClass: 'original-text-tooltip',
       targetLanguage,
     };
-
-    // Create and inject hover tooltip styles
-    const style = document.createElement('style');
-    style.textContent = `
-      .${config.tooltipClass} {
-        position: absolute;
-        background: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        padding: 4px 8px;
-        font-size: 0.9em;
-        z-index: 10000;
-        pointer-events: none;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        transform: translateY(-100%);
-        margin-top: -8px;
-      }
-
-      .translated-element {
-        background: linear-gradient(120deg, rgba(108, 99, 255, 0.8), rgba(74, 144, 226, 0.8), rgba(255, 107, 237, 0.8));
-        border-radius: 8px;
-        padding: 6px !important;
-        color: white !important;
-        transition: all 0.3s ease;
-        border: 1px solid rgba(108, 99, 255, 0.1);
-      }
-
-      .translated-element:hover {
-        background: linear-gradient(120deg, rgba(108, 99, 255, 0.7), rgba(74, 144, 226, 0.6), rgba(255, 107, 237, 0.6));
-        border: 1px solid rgba(108, 99, 255, 0.2);
-      }
-    `;
-    document.head.appendChild(style);
 
     // Function to translate a single element
     async function translateElement(element: HTMLElement) {

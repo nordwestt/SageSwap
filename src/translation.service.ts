@@ -19,10 +19,6 @@ const translationCache = storage.defineItem<TranslationCacheEntry[]>('local:tran
 class TranslationService {
   private readonly CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
-  private getCacheKey(text: string, source: string, target: string): string {
-    return `${text}:${source}:${target}`;
-  }
-
   private async getCachedTranslation(text: string, source: string, target: string): Promise<string | null> {
     const cache = await translationCache.getValue();
     const now = Date.now();
@@ -60,6 +56,8 @@ class TranslationService {
   }
 
   async translateWithDeepL(text: string, source: string, target: string): Promise<string> {
+    return "We did it!";
+    
     // Check cache first
     const cachedTranslation = await this.getCachedTranslation(text, source, target);
     if (cachedTranslation) {

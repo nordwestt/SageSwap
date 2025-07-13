@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom tooltip styles */
+.original-text-tooltip {
+  @apply absolute bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm z-[10000] pointer-events-none shadow-md;
+  transform: translateY(-100%);
+  margin-top: -8px;
+}
+
+/* Translated element styles */
+.translated-element {
+  @apply rounded-lg !p-1 text-white transition-all duration-300 ease-in-out bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 hover:opacity-80;
+  /* background: linear-gradient(120deg, rgba(108, 99, 255, 0.8), rgba(74, 144, 226, 0.8), rgba(255, 107, 237, 0.8)); */
+}
