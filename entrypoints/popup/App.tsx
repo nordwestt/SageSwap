@@ -12,6 +12,18 @@ interface ElementSettings {
   p: boolean;
 }
 
+// Common language options
+const LANGUAGE_OPTIONS = [
+  { code: 'es', name: 'Spanish', flag: '🇪🇸' },
+  { code: 'fr', name: 'French', flag: '🇫🇷' },
+  { code: 'de', name: 'German', flag: '🇩🇪' },
+  { code: 'it', name: 'Italian', flag: '🇮🇹' },
+  { code: 'pt', name: 'Portuguese', flag: '🇵🇹' },
+  { code: 'ru', name: 'Russian', flag: '🇷🇺' },
+  { code: 'ja', name: 'Japanese', flag: '🇯🇵' },
+  { code: 'zh', name: 'Chinese', flag: '🇨🇳' },
+] as const;
+
 function App() {
   const [settings, setSettings] = useState<ElementSettings>({
     h1: true,
@@ -20,6 +32,7 @@ function App() {
     p: false,
   });
   const [apiKey, setApiKey] = useState('');
+  const [targetLanguage, setTargetLanguage] = useState('es');
 
   // Load settings when popup opens
   useEffect(() => {
@@ -33,6 +46,13 @@ function App() {
     storage.getItem('local:deeplApiKey').then((key: unknown) => {
       if (typeof key === 'string') {
         setApiKey(key);
+      }
+    });
+
+    // Load target language
+    storage.getItem('local:targetLanguage').then((lang: unknown) => {
+      if (typeof lang === 'string') {
+        setTargetLanguage(lang);
       }
     });
   }, []);
@@ -56,6 +76,13 @@ function App() {
     storage.setItem('local:deeplApiKey', newApiKey);
   };
 
+  // Handle target language changes
+  const handleLanguageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newLanguage = event.target.value;
+    setTargetLanguage(newLanguage);
+    storage.setItem('local:targetLanguage', newLanguage);
+  };
+
   return (
     <>
     <div className="settings-container">
@@ -72,6 +99,24 @@ function App() {
         />
         <p className="help-text">
           Enter your DeepL API key to enable translations
+        </p>
+      </div>
+
+      <div className="language-section">
+        <h2>Target Language</h2>
+        <select
+          value={targetLanguage}
+          onChange={handleLanguageChange}
+          className="language-select"
+        >
+          {LANGUAGE_OPTIONS.map(lang => (
+            <option key={lang.code} value={lang.code} className="language-option">
+              {lang.flag} {lang.name}
+            </option>
+          ))}
+        </select>
+        <p className="help-text">
+          Select the language to translate text into
         </p>
       </div>
 

@@ -27,12 +27,16 @@ export default defineContentScript({
       p: false,
     };
 
+    // Get target language from storage
+    const targetLanguage = await storage.getItem<string>('local:targetLanguage') || 'es';
+
     // Configuration object
     const config = {
       targetElements: Object.entries(elementSettings)
         .filter(([_, isEnabled]) => isEnabled)
         .map(([elementType]) => elementType),
       tooltipClass: 'original-text-tooltip',
+      targetLanguage,
     };
 
     // Create and inject hover tooltip styles
@@ -79,11 +83,11 @@ export default defineContentScript({
           const originalText = element.textContent;
           element.setAttribute('data-original-text', originalText);
           
-          // Translate to Spanish
+          // Translate using selected target language
           const translatedText = await translateText({
             text: originalText,
             source: 'en',
-            target: 'es'
+            target: config.targetLanguage
           });
           element.textContent = translatedText;
           
@@ -195,6 +199,14 @@ export default defineContentScript({
           .map(([elementType]) => elementType);
         
         // Reset all elements and reapply with new settings
+        resetElements();
+        observeElements();
+      }
+
+      // Handle target language changes
+      if (changes.targetLanguage) {
+        config.targetLanguage = changes.targetLanguage.newValue;
+        // Reset and retranslate all elements with new language
         resetElements();
         observeElements();
       }
