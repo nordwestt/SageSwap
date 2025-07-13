@@ -151,10 +151,14 @@ export default defineContentScript({
       
       if (!originalText) return;
 
-      
+
       // Generate variants and create quiz UI
       // const variants = await generateTextVariants(originalText);
       const quizContainerId = element.getAttribute('data-quiz-container-id');
+
+      // do not show quiz if it already exists
+      if (document.querySelector(`#${quizContainerId}`)) return;
+
       const quizContainer = createQuizUI(originalText, [originalText], element);
       quizContainer.id = quizContainerId ?? Math.random().toString(36).substring(2, 15);
       
