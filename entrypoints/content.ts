@@ -1,5 +1,5 @@
 import { storage } from '#imports';
-
+import { getTranslationService } from '../src/translation.service';
 
 export async function translateText({
   text,
@@ -11,7 +11,11 @@ export async function translateText({
   target: string;
 }): Promise<string> {
   const apiKey = "";
-
+  
+  const translationService = getTranslationService();
+  const translatedText = await translationService.translateWithDeepL(text, source, target);
+  console.log(translatedText);
+  return translatedText;
   if (!apiKey) {
     throw new Error("Missing DeepL API key.");
   }
