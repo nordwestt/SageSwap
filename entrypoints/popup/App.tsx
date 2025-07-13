@@ -151,13 +151,13 @@ function App() {
 
       <div className="excluded-domains-section bg-gray-100 p-4 rounded-lg mb-4">
         <h2 className="text-lg font-bold mb-4">Excluded Domains</h2>
-        <form onSubmit={handleAddDomain} className="flex gap-2 mb-4">
+        <form onSubmit={handleAddDomain} className="flex gap-2 mb-4 flex-row w-full">
           <input
             type="text"
             value={newDomain}
             onChange={(e) => setNewDomain(e.target.value)}
             placeholder="e.g. example.com"
-            className="flex-grow p-2 rounded border"
+            className="p-2 rounded border w-full"
           />
           <button type="submit" className="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700">
             Add
