@@ -19,6 +19,7 @@ function App() {
     h3: false,
     p: false,
   });
+  const [apiKey, setApiKey] = useState('');
 
   // Load settings when popup opens
   useEffect(() => {
@@ -27,9 +28,16 @@ function App() {
         setSettings(result);
       }
     });
+
+    // Load API key
+    storage.getItem('local:deeplApiKey').then((key: unknown) => {
+      if (typeof key === 'string') {
+        setApiKey(key);
+      }
+    });
   }, []);
 
-  // // Save settings when they change
+  // Save settings when they change
   const handleSettingChange = (elementType: keyof ElementSettings) => {
     const newSettings = {
       ...settings,
@@ -41,10 +49,33 @@ function App() {
     storage.setItem('local:elementSettings', newSettings);
   };
 
+  // Handle API key changes
+  const handleApiKeyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newApiKey = event.target.value;
+    setApiKey(newApiKey);
+    storage.setItem('local:deeplApiKey', newApiKey);
+  };
+
   return (
     <>
     <div className="settings-container">
-      <h1>Text Transform Settings</h1>
+      <h1>SwapSage Settings</h1>
+      
+      <div className="api-key-section">
+        <h2>DeepL API Key</h2>
+        <input
+          type="password"
+          value={apiKey}
+          onChange={handleApiKeyChange}
+          placeholder="Enter your DeepL API key"
+          className="api-key-input"
+        />
+        <p className="help-text">
+          Enter your DeepL API key to enable translations
+        </p>
+      </div>
+
+      <h2>Text Transform Settings</h2>
       <div className="settings-grid">
         {Object.entries(settings).map(([elementType, isEnabled]) => (
           <label key={elementType} className="setting-item">

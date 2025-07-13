@@ -66,7 +66,12 @@ class TranslationService {
       return cachedTranslation;
     }
 
-    const apiKey = "c0df7d03-abcb-5eba-bf4e-ae5a4d78126f:fx";
+    // Get API key from storage
+    const apiKey = await storage.getItem('local:deeplApiKey');
+    if (!apiKey) {
+      throw new Error('DeepL API key not configured. Please set your API key in the extension settings.');
+    }
+
     const response = await fetch("https://api-free.deepl.com/v2/translate", {
         method: "POST",
         headers: {
