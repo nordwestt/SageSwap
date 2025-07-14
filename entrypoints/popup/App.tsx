@@ -143,14 +143,17 @@ function App() {
     <>
     <div className="settings-container bg-gradient-to-br from-emerald-600 to-emerald-300">
     
-      <h1 className="!text-white !text-2xl font-bold p-4 flex items-center justify-between"><img
+      <h1 className="!text-white !text-2xl font-bold pb-4 px-4 flex items-center justify-between"><img
             src="/icon/96.png"
             alt="logo"
             className="w-16 h-16 mr-2 border-2 p-1 bg-white rounded-full shadow-lg"
           /> Swap Sage</h1>
       
       <div className="api-key-section">
-        <h2 className="text-lg font-bold mb-4">DeepL API Key</h2>
+        <h2 className="text-lg font-bold mb-4">DeepL API Key (free)</h2>
+        <a className="help-text hover:underline" href="https://www.deepl.com/en/your-account/keys" target="_blank" rel="noopener noreferrer">
+          Click here to sign up for a free DeepL API key
+        </a>
         <input
           type="password"
           value={apiKey}
@@ -158,9 +161,7 @@ function App() {
           placeholder="Enter your DeepL API key"
           className="api-key-input"
         />
-        <p className="help-text">
-          Enter your DeepL API key to enable translations
-        </p>
+        
       </div>
 
       <div className="language-section">
@@ -241,7 +242,17 @@ function App() {
           )
         ))}
       </div>
+      
       </div>
+
+      <div className="bg-gray-100 p-4 rounded-lg mt-4">
+        <h2 className="text-lg font-bold mb-4">About</h2>
+        <a className="help-text hover:underline" href="https://nordwestt.com" target="_blank" rel="noopener noreferrer">
+          Created with ❤️ by NordWestT
+        </a>
+      </div>
+
+      
       
       {/* <div className="quiz-mode-section">
         <label className="setting-item quiz-mode">
