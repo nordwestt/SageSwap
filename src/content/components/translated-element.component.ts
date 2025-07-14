@@ -2,6 +2,7 @@ import { Config } from '../types';
 import { getTranslationService } from '../../translation.service';
 import { QuizUIComponent } from './quiz-ui.component';
 import { quizService } from '../services/quiz.service';
+import { LoadingSpinnerComponent } from './loading-spinner';
 
 export class TranslatedElementComponent {
   static async translateElement(element: HTMLElement, config: Config): Promise<void> {
@@ -11,7 +12,11 @@ export class TranslatedElementComponent {
 
     try {
       element.setAttribute('data-translation-in-progress', 'true');
-      element.classList.add('translated-element');
+      element.classList.add('translated-element', 'translation-loading');
+      
+      // Add loading spinner
+      const spinner = LoadingSpinnerComponent.createSpinner();
+      element.appendChild(spinner);
       
       // Store original text
       const originalText = element.textContent;
@@ -19,6 +24,9 @@ export class TranslatedElementComponent {
       
       // Translate using selected target language
       const translationService = getTranslationService();
+      // artificial delay
+      //await new Promise(resolve => setTimeout(resolve, 20000));
+      //const translatedText = "translated text";
       const translatedText = await translationService.translateWithDeepL(
         originalText,
         'en',
@@ -26,6 +34,7 @@ export class TranslatedElementComponent {
       );
       
       element.textContent = translatedText;
+      element.classList.remove('translation-loading');
       
       // Add event listeners
       element.addEventListener('mouseenter', () => this.showOriginalText(element));
@@ -120,7 +129,13 @@ export class TranslatedElementComponent {
   private static resetElement(element: HTMLElement): void {
     element.removeAttribute('data-original-text');
     element.removeAttribute('data-translation-in-progress');
-    element.classList.remove('translated-element');
+    element.classList.remove('translated-element', 'translation-loading');
+    
+    // Remove spinner if it exists
+    const spinner = element.querySelector('.translation-spinner');
+    if (spinner) {
+      spinner.remove();
+    }
   }
 
   static resetAllElements(): void {
