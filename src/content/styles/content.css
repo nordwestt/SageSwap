@@ -41,7 +41,7 @@
 
 /* Quiz mode styles */
 .quiz-options {
-  @apply absolute bg-white border border-gray-300 rounded-lg p-2 z-[10000] shadow-lg;
+  @apply absolute bg-white border border-gray-300 rounded-lg p-2 z-[10000] shadow-lg border-emerald-500 border-2;
   transform: translateY(-100%);
   margin-top: -8px;
   min-width: 200px;
