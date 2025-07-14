@@ -21,7 +21,7 @@ export default defineContentScript({
 
     // Listen for settings changes
     browser.storage.onChanged.addListener(async (changes) => {
-      if (changes.elementSettings || changes.targetLanguage) {
+      if (changes.elementSettings || changes.targetLanguage || changes.deeplApiKey) {
         // Update config and restart observation
         const newConfig = await getConfig();
         TranslatedElementComponent.resetAllElements();
