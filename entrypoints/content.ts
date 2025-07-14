@@ -23,7 +23,6 @@ function createQuizUI(originalText: string, variants: string[], element: HTMLEle
   quizContainer.className = 'quiz-options quiz-container';
   
   variants.forEach((variant, index) => {
-    // Create a wrapper div for each option
     const optionWrapper = document.createElement('div');
     optionWrapper.className = 'quiz-option-wrapper';
 
@@ -31,7 +30,6 @@ function createQuizUI(originalText: string, variants: string[], element: HTMLEle
     button.className = 'quiz-option';
     
     button.textContent = variant;
-    // Add the "click to reveal" text as an overlay
     const revealText = document.createElement('span');
     revealText.className = 'reveal-text-overlay';
     revealText.textContent = 'click to reveal...';
@@ -42,37 +40,22 @@ function createQuizUI(originalText: string, variants: string[], element: HTMLEle
       revealText.style.display = 'block';
     }
 
-
     button.addEventListener('click', () => {
       button.classList.remove('blurred');
       revealText.style.display = 'none';
       revealedTexts[variant] = true;
-
-      // Check if the answer is correct
-      // const isCorrect = variant === variants[0]; // First variant is always the correct one
-      
-      // Add result icon
-      // const resultIcon = document.createElement('div');
-      // resultIcon.className = `result-icon ${isCorrect ? 'correct' : 'incorrect'}`;
-      // resultIcon.innerHTML = isCorrect ? '✓' : '✗';
-      // quizContainer.appendChild(resultIcon);
-      
-      // // Highlight the selected option
-      // button.classList.add(isCorrect ? 'correct' : 'incorrect');
       
       // Disable all buttons
       quizContainer.querySelectorAll('button').forEach(btn => {
         btn.disabled = true;
       });
-
       
-      // // Remove the quiz after a delay
       setTimeout(() => {
         quizContainer.remove();
       }, 2000);
     });
     optionWrapper.appendChild(button);
-    optionWrapper.appendChild(revealText); // Add the reveal text after the button
+    optionWrapper.appendChild(revealText);
 
     quizContainer.appendChild(optionWrapper);
   });
@@ -183,6 +166,27 @@ export default defineContentScript({
 
     async function onTranslatedTextClick(event: Event) {
       const element = event.target as HTMLElement;
+      const originalText = element.getAttribute('data-original-text');
+      
+      if (!originalText || !element.classList.contains('translated-element')) return;
+      
+      // Mark the text as revealed
+      revealedTexts[originalText] = true;
+      
+      // Find and update any existing quiz containers for this text
+      const quizContainerId = element.getAttribute('data-quiz-container-id');
+      if (quizContainerId) {
+        const quizContainer = document.querySelector(`#${quizContainerId}`);
+        if (quizContainer) {
+          const button = quizContainer.querySelector('.quiz-option') as HTMLButtonElement;
+          const revealText = quizContainer.querySelector('.reveal-text-overlay') as HTMLElement;
+          if (button && revealText) {
+            button.classList.remove('blurred');
+            revealText.style.display = 'none';
+            button.disabled = true;
+          }
+        }
+      }
     }
 
     // Show original text tooltip or quiz
