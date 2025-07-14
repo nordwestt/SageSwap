@@ -149,6 +149,10 @@ function App() {
             alt="logo"
             className="w-16 h-16 mr-2 border-2 p-1 bg-white rounded-full shadow-lg"
           /> Sage Swap</h1>
+
+      <p id="early-version-warning" className="text-white text-sm font-bold mb-4 text-center">
+        <span id="warning-icon" className="text-yellow-500">⚠️</span> This is an early version of Sage Swap. Any feedback is welcome.
+      </p>
       
       <div className="api-key-section">
         <h2 className="text-lg font-bold mb-4">DeepL API Key (free)</h2>
