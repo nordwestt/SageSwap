@@ -1,8 +1,8 @@
 {
   "name": "Sage Swap",
-  "description": "manifest.json description",
+  "description": "Learn languages naturally as you browse. This smart browser extension gradually replaces words in your native language with your target language, creating an organic, immersive learning experience. Master vocabulary in context, at your own pace.",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "wxt",

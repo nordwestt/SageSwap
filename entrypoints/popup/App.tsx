@@ -147,7 +147,7 @@ function App() {
             src="/icon/96.png"
             alt="logo"
             className="w-16 h-16 mr-2 border-2 p-1 bg-white rounded-full shadow-lg"
-          /> Swap Sage</h1>
+          /> Sage Swap</h1>
       
       <div className="api-key-section">
         <h2 className="text-lg font-bold mb-4">DeepL API Key (free)</h2>
@@ -247,8 +247,11 @@ function App() {
 
       <div className="bg-gray-100 p-4 rounded-lg mt-4">
         <h2 className="text-lg font-bold mb-4">About</h2>
-        <a className="help-text hover:underline" href="https://nordwestt.com" target="_blank" rel="noopener noreferrer">
-          Created with ❤️ by NordWestT
+        <a className="help-text hover:underline w-full block text-center" href="https://nordwestt.com" target="_blank" rel="noopener noreferrer">
+          Created with <span className="text-red-500">❤️</span> by NordWestT
+        </a>
+        <a className="text-purple-400 hover:underline w-full block text-center" href="https://coff.ee/nordwestt" target="_blank" rel="noopener noreferrer">
+        Click here to buy me a coffee ☕️
         </a>
       </div>
 

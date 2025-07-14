@@ -102,7 +102,7 @@ export default defineContentScript({
     const excludedDomains = await storage.getItem<string[]>('local:excludedDomains') || [];
     
     if (excludedDomains.includes(currentDomain)) {
-      console.log('SwapSage: Translation disabled for this domain');
+      console.log('SageSwap: Translation disabled for this domain');
       return;
     }
 
