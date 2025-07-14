@@ -19,7 +19,7 @@
 
 .quiz-option {
   @apply block w-full text-left px-3 py-2 rounded-md mb-1 last:mb-0 cursor-pointer 
-         transition-all duration-200 hover:bg-gray-100;
+         transition-all duration-200 hover:bg-gray-100 !text-black;
 }
 
 .quiz-option.correct {
