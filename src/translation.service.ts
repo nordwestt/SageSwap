@@ -94,6 +94,11 @@ class TranslationService {
     
       return translation;
   }
+
+  async hasApiKey(): Promise<boolean> {
+    const apiKey = await storage.getItem('local:deeplApiKey');
+    return !!apiKey;
+  }
 }
 
 export const [registerTranslationService, getTranslationService] = defineProxyService(

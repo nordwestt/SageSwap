@@ -9,24 +9,29 @@ export class TranslatedElementComponent {
     if (!element.textContent || this.isElementProcessed(element)) {
       return;
     }
+    const translationService = getTranslationService();
+    const hasApiKey = await translationService.hasApiKey();
+    if (!hasApiKey) {
+      return;
+    }
+
+    const originalText = element.textContent.trim();
 
     try {
       element.setAttribute('data-translation-in-progress', 'true');
       element.classList.add('translated-element', 'translation-loading');
       
-      // Add loading spinner
+      element.textContent = "\u200B";
+      
       const spinner = LoadingSpinnerComponent.createSpinner();
       element.appendChild(spinner);
       
-      // Store original text
-      const originalText = element.textContent;
       element.setAttribute('data-original-text', originalText);
       
-      // Translate using selected target language
-      const translationService = getTranslationService();
+      
       // artificial delay
-      //await new Promise(resolve => setTimeout(resolve, 20000));
-      //const translatedText = "translated text";
+      // await new Promise(resolve => setTimeout(resolve, 20000));
+      // const translatedText = "translated text";
       const translatedText = await translationService.translateWithDeepL(
         originalText,
         'en',
@@ -127,9 +132,12 @@ export class TranslatedElementComponent {
   }
 
   private static resetElement(element: HTMLElement): void {
+    element.textContent = element.getAttribute('data-original-text') || '';
+
     element.removeAttribute('data-original-text');
     element.removeAttribute('data-translation-in-progress');
     element.classList.remove('translated-element', 'translation-loading');
+    
     
     // Remove spinner if it exists
     const spinner = element.querySelector('.translation-spinner');
