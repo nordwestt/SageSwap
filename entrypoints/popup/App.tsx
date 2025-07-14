@@ -3,6 +3,7 @@ import reactLogo from '@/assets/react.svg';
 import wxtLogo from '/wxt.svg';
 import './App.css';
 import { storage, browser } from '#imports';
+import pkg from '../../package.json';
 
 
 interface ElementSettings {
@@ -247,12 +248,16 @@ function App() {
 
       <div className="bg-gray-100 p-4 rounded-lg mt-4">
         <h2 className="text-lg font-bold mb-4">About</h2>
+        
         <a className="help-text hover:underline w-full block text-center" href="https://nordwestt.com" target="_blank" rel="noopener noreferrer">
           Created with <span className="text-red-500">❤️</span> by NordWestT
         </a>
         <a className="text-purple-400 hover:underline w-full block text-center" href="https://coff.ee/nordwestt" target="_blank" rel="noopener noreferrer">
         Click here to buy me a coffee ☕️
         </a>
+        <p className="help-text mb-2 text-center font-bold">
+          Version {pkg.version}
+        </p>
       </div>
 
       
